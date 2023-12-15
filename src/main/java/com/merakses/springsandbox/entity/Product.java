@@ -14,12 +14,14 @@ import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import lombok.Setter;
 import lombok.ToString;
+import lombok.experimental.Accessors;
 import org.hibernate.proxy.HibernateProxy;
 
 @Getter
 @Setter
 @ToString
 @Entity
+@Accessors(chain = true)
 @Table(name = "products")
 @RequiredArgsConstructor
 public class Product {

@@ -5,12 +5,13 @@ import com.merakses.springsandbox.dto.ProductFilterDto;
 import com.merakses.springsandbox.entity.Product;
 import com.merakses.springsandbox.repository.ProductRepository;
 import com.merakses.springsandbox.service.ProductService;
-import jakarta.transaction.Transactional;
+import java.util.Collections;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 @Service
 @RequiredArgsConstructor
@@ -19,8 +20,10 @@ public class ProductServiceImpl implements ProductService {
 
   private final ProductRepository productRepository;
 
-  @Filtered
-  private Specification<Product> searchSpec;
+  @Filtered(ProductFilterDto.class)
+  private final Specification<Product> searchSpec = Specification.where(null);
+
+  private String test;
 
   @Override
   public List<Product> findAll() {
@@ -29,8 +32,8 @@ public class ProductServiceImpl implements ProductService {
   }
 
   @Override
-  @Filtered
   public List<Product> search(ProductFilterDto filter) {
-    return productRepository.findAll(searchSpec);
+//    return productRepository.findAll(searchSpec);
+    return Collections.singletonList(new Product().setName(test));
   }
 }
