@@ -1,12 +1,12 @@
-package com.merakses.springsandbox.annotation;
+package com.merakses.springsandbox.specification.annotation;
 
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
-@Target({ElementType.FIELD, ElementType.METHOD})
+@Target(ElementType.FIELD)
 @Retention(RetentionPolicy.RUNTIME)
-public @interface Filtered {
+public @interface LesserThan {
 
 }
