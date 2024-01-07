@@ -8,16 +8,18 @@ import com.merakses.springsandbox.specification.annotation.GreaterThan;
 import com.merakses.springsandbox.specification.annotation.LesserThan;
 import com.merakses.springsandbox.specification.annotation.Like;
 import java.util.List;
+import lombok.Builder;
 import lombok.Data;
 
 @Data
+@Builder
 @EntityFilter(Product.class)
 public class ProductFilterDto {
 
-  @Like
+  @Like(Product.Fields.name)
   private String name;
 
-  @GreaterThan
+  @GreaterThan(Product.Fields.price)
   private int minPrice;
 
   @LesserThan

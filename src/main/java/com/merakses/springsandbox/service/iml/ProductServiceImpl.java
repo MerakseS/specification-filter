@@ -29,6 +29,7 @@ public class ProductServiceImpl implements ProductService {
 
   @Override
   public List<Product> search(ProductFilterDto filter) {
+    log.info("Searching products by filter {}", filter);
     return productRepository.findAll(searchSpec);
   }
 }

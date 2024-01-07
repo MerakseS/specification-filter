@@ -3,9 +3,9 @@ package com.merakses.springsandbox.specification;
 import java.lang.annotation.Annotation;
 import org.springframework.data.jpa.domain.Specification;
 
-public interface SpecificationPredicate {
+public interface SpecificationPredicate<A extends Annotation, T> {
 
-  <T> Specification<T> generate(String fieldName, Object value);
+  <S> Specification<S> generate(T value);
 
-  Class<? extends Annotation> getAnnotation();
+  void initialize(A annotation);
 }

@@ -5,6 +5,7 @@ import com.merakses.springsandbox.annotation.Filtered;
 import com.merakses.springsandbox.model.FiltrationInfo;
 import com.merakses.springsandbox.specification.SpecificationGenerationService;
 import java.lang.reflect.Field;
+import java.lang.reflect.InvocationHandler;
 import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Proxy;
 import java.util.Arrays;
@@ -44,6 +45,15 @@ public class FilteredAnnotationBeanPostProcessor implements BeanPostProcessor {
     return bean;
   }
 
+  private static Class<?> getFilteredClass(Field field) {
+    if (!Specification.class.isAssignableFrom(field.getType())) {
+      throw new IllegalArgumentException("Field type must implement Specification");
+    }
+
+    ParameterizedType genericType = (ParameterizedType) field.getGenericType();
+    return (Class<?>) genericType.getActualTypeArguments()[0];
+  }
+
   @Override
   public Object postProcessAfterInitialization(Object bean, String beanName) throws BeansException {
     FiltrationInfo filtrationInfo = filtrationInfoMap.get(beanName);
@@ -55,36 +65,32 @@ public class FilteredAnnotationBeanPostProcessor implements BeanPostProcessor {
     return Proxy.newProxyInstance(
         beanClass.getClassLoader(),
         beanClass.getInterfaces(),
-        (proxy, method, args) -> {
-          Object parameter = findFilter(args, filtrationInfo.getFilteredClass());
-          if (parameter == null) {
-            return method.invoke(bean, args);
-          }
-
-          Specification<?> specification = specificationGenerationService.generate(parameter);
-
-          Field speciticationField = filtrationInfo.getSpeciticationField();
-          speciticationField.setAccessible(true);
-          ReflectionUtils.setField(
-              speciticationField,
-              bean,
-              specification
-          );
-
-          return method.invoke(bean, args);
-        });
+        getInvocationHandler(bean, filtrationInfo)
+    );
   }
 
-  private static Class<?> getFilteredClass(Field field) {
-    if (!Specification.class.isAssignableFrom(field.getType())) {
-      throw new IllegalArgumentException("Field type must implement Specification");
-    }
+  private InvocationHandler getInvocationHandler(Object bean, FiltrationInfo filtrationInfo) {
+    return (proxy, method, args) -> {
+      Object parameter = findFilter(args, filtrationInfo.getFilteredClass());
+      if (parameter == null) {
+        return method.invoke(bean, args);
+      }
 
-    ParameterizedType genericType = (ParameterizedType) field.getGenericType();
-    return (Class<?>) genericType.getActualTypeArguments()[0];
+      Specification<?> specification = specificationGenerationService.generate(parameter);
+
+      Field speciticationField = filtrationInfo.getSpeciticationField();
+      speciticationField.setAccessible(true);
+      ReflectionUtils.setField(speciticationField, bean, specification);
+
+      return method.invoke(bean, args);
+    };
   }
 
   private static Object findFilter(Object[] args, Class<?> filteredClass) {
+    if (args == null) {
+      return null;
+    }
+
     for (Object parameter : args) {
       Class<?> parameterType = parameter.getClass();
       if (parameterType.isAnnotationPresent(EntityFilter.class)) {
