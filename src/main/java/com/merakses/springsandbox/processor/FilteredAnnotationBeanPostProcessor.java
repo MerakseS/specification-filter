@@ -1,11 +1,10 @@
 package com.merakses.springsandbox.processor;
 
-import com.merakses.springsandbox.annotation.EntityFilter;
-import com.merakses.springsandbox.annotation.Filtered;
+import static com.merakses.springsandbox.util.GenericReflectionUtils.getSpecificationTypeParameter;
+
+import com.merakses.springsandbox.annotation.SpecificationFilter;
 import com.merakses.springsandbox.model.FiltrationInfo;
-import com.merakses.springsandbox.specification.SpecificationGenerationService;
-import java.lang.reflect.Field;
-import java.lang.reflect.ParameterizedType;
+import com.merakses.springsandbox.specification.SpecificationFilterService;
 import java.lang.reflect.Proxy;
 import java.util.Arrays;
 import java.util.HashMap;
@@ -14,30 +13,28 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.BeansException;
 import org.springframework.beans.factory.config.BeanPostProcessor;
-import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Component;
-import org.springframework.util.ReflectionUtils;
 
 @Slf4j
 @Component
 @RequiredArgsConstructor
 public class FilteredAnnotationBeanPostProcessor implements BeanPostProcessor {
 
-  private final Map<String, FiltrationInfo> filtrationInfoMap = new HashMap<>();
+  private final SpecificationFilterService specificationFilterService;
 
-  private final SpecificationGenerationService specificationGenerationService;
+  private final Map<String, FiltrationInfo> filtrationInfoMap = new HashMap<>();
 
   @Override
   public Object postProcessBeforeInitialization(Object bean, String beanName)
       throws BeansException {
     Class<?> beanClass = bean.getClass();
     Arrays.stream(beanClass.getDeclaredFields())
-        .filter(field -> field.isAnnotationPresent(Filtered.class))
+        .filter(field -> field.isAnnotationPresent(SpecificationFilter.class))
         .map(field -> FiltrationInfo.builder()
             .beanName(beanName)
             .beanClass(beanClass)
             .speciticationField(field)
-            .filteredClass(getFilteredClass(field))
+            .filteredClass(getSpecificationTypeParameter(field))
             .build())
         .forEach(filtrationInfo -> filtrationInfoMap.put(beanName, filtrationInfo));
 
@@ -51,50 +48,11 @@ public class FilteredAnnotationBeanPostProcessor implements BeanPostProcessor {
       return bean;
     }
 
-    Class<?> beanClass = filtrationInfo.getBeanClass();
     return Proxy.newProxyInstance(
-        beanClass.getClassLoader(),
-        beanClass.getInterfaces(),
-        (proxy, method, args) -> {
-          Object parameter = findFilter(args, filtrationInfo.getFilteredClass());
-          if (parameter == null) {
-            return method.invoke(bean, args);
-          }
-
-          Specification<?> specification = specificationGenerationService.generate(parameter);
-
-          Field speciticationField = filtrationInfo.getSpeciticationField();
-          speciticationField.setAccessible(true);
-          ReflectionUtils.setField(
-              speciticationField,
-              bean,
-              specification
-          );
-
-          return method.invoke(bean, args);
-        });
-  }
-
-  private static Class<?> getFilteredClass(Field field) {
-    if (!Specification.class.isAssignableFrom(field.getType())) {
-      throw new IllegalArgumentException("Field type must implement Specification");
-    }
-
-    ParameterizedType genericType = (ParameterizedType) field.getGenericType();
-    return (Class<?>) genericType.getActualTypeArguments()[0];
-  }
-
-  private static Object findFilter(Object[] args, Class<?> filteredClass) {
-    for (Object parameter : args) {
-      Class<?> parameterType = parameter.getClass();
-      if (parameterType.isAnnotationPresent(EntityFilter.class)) {
-        EntityFilter entityFilterAnnotation = parameterType.getAnnotation(EntityFilter.class);
-        if (entityFilterAnnotation.value() == filteredClass) {
-          return parameter;
-        }
-      }
-    }
-
-    return null;
+        filtrationInfo.getBeanClass().getClassLoader(),
+        filtrationInfo.getBeanClass().getInterfaces(),
+        new SpecificationFilterDynamicProxy(bean, filtrationInfo,
+            specificationFilterService)
+    );
   }
 }

@@ -15,6 +15,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.Setter;
 import lombok.ToString;
 import lombok.experimental.Accessors;
+import lombok.experimental.FieldNameConstants;
 import org.hibernate.proxy.HibernateProxy;
 
 @Getter
@@ -24,6 +25,7 @@ import org.hibernate.proxy.HibernateProxy;
 @Accessors(chain = true)
 @Table(name = "products")
 @RequiredArgsConstructor
+@FieldNameConstants
 public class Product {
 
   @Id

@@ -1,6 +1,6 @@
 package com.merakses.springsandbox.service.iml;
 
-import com.merakses.springsandbox.annotation.Filtered;
+import com.merakses.springsandbox.annotation.SpecificationFilter;
 import com.merakses.springsandbox.dto.ProductFilterDto;
 import com.merakses.springsandbox.entity.Product;
 import com.merakses.springsandbox.repository.ProductRepository;
@@ -18,7 +18,7 @@ public class ProductServiceImpl implements ProductService {
 
   private final ProductRepository productRepository;
 
-  @Filtered
+  @SpecificationFilter
   private final Specification<Product> searchSpec = Specification.where(null);
 
   @Override
@@ -29,6 +29,7 @@ public class ProductServiceImpl implements ProductService {
 
   @Override
   public List<Product> search(ProductFilterDto filter) {
+    log.info("Searching products by filter {}", filter);
     return productRepository.findAll(searchSpec);
   }
 }

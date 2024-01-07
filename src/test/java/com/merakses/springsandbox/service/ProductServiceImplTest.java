@@ -4,28 +4,56 @@ import com.merakses.springsandbox.dto.ProductFilterDto;
 import com.merakses.springsandbox.entity.Product;
 import com.merakses.springsandbox.repository.ProductRepository;
 import java.util.List;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
-import org.springframework.boot.autoconfigure.jdbc.DataSourceAutoConfiguration;
+import org.springframework.boot.test.autoconfigure.jdbc.AutoConfigureTestDatabase;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.boot.test.mock.mockito.MockBean;
-import org.springframework.test.context.junit4.SpringRunner;
 
+@AutoConfigureTestDatabase
 @SpringBootTest
-@RunWith(SpringRunner.class)
-@EnableAutoConfiguration(exclude = {DataSourceAutoConfiguration.class})
 public class ProductServiceImplTest {
 
-  @MockBean
+  @Autowired
   private ProductRepository productRepository;
 
   @Autowired
   private ProductService productService;
 
+  @BeforeEach
+  public void setUp() {
+    productRepository.saveAllAndFlush(List.of(
+        new Product()
+            .setName("Phone")
+            .setPrice(100),
+        new Product()
+            .setName("Laptop")
+            .setPrice(300)
+    ));
+  }
+
+  @AfterEach
+  public void tearDown() {
+    productRepository.deleteAll();
+  }
+
   @Test
-  public void testInject() {
-    List<Product> products = productService.search(new ProductFilterDto());
+  public void testRepository() {
+    List<Product> products = productService.findAll();
+    Assertions.assertEquals(2, products.size());
+  }
+
+  @Test
+  public void greaterThan() {
+    ProductFilterDto filter = ProductFilterDto.builder()
+        .minPrice(200)
+        .build();
+
+    List<Product> products = productService.search(filter);
+
+    System.out.println(products);
+    Assertions.assertEquals(1, products.size());
   }
 }
