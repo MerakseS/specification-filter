@@ -20,10 +20,10 @@ public class ProductFilterDto {
   private String name;
 
   @GreaterThan(Product.Fields.price)
-  private int minPrice;
+  private Integer minPrice;
 
-  @LesserThan
-  private int maxPrice;
+  @LesserThan(Product.Fields.price)
+  private Integer maxPrice;
 
   @Equals
   private List<ProductType> productTypes;

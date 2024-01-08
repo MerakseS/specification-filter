@@ -3,12 +3,11 @@ package com.merakses.springsandbox.processor;
 import com.merakses.springsandbox.annotation.EntityFilter;
 import com.merakses.springsandbox.model.FiltrationInfo;
 import com.merakses.springsandbox.specification.SpecificationFilterService;
-import java.lang.reflect.Field;
+import com.merakses.springsandbox.util.ReflectionUtils;
 import java.lang.reflect.InvocationHandler;
 import java.lang.reflect.Method;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.jpa.domain.Specification;
-import org.springframework.util.ReflectionUtils;
 
 @RequiredArgsConstructor
 public class SpecificationFilterDynamicProxy implements InvocationHandler {
@@ -26,10 +25,8 @@ public class SpecificationFilterDynamicProxy implements InvocationHandler {
     }
 
     Specification<?> specification = specificationFilterService.create(parameter);
-
-    Field speciticationField = filtrationInfo.getSpeciticationField();
-    speciticationField.setAccessible(true);
-    ReflectionUtils.setField(speciticationField, target, specification);
+    ReflectionUtils.setFieldValue(filtrationInfo.getSpeciticationField(),
+        target, specification);
 
     return method.invoke(target, args);
   }

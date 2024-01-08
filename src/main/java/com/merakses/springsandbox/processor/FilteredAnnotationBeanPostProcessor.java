@@ -1,6 +1,6 @@
 package com.merakses.springsandbox.processor;
 
-import static com.merakses.springsandbox.util.GenericReflectionUtils.getSpecificationTypeParameter;
+import static com.merakses.springsandbox.util.ReflectionUtils.getSpecificationTypeParameter;
 
 import com.merakses.springsandbox.annotation.SpecificationFilter;
 import com.merakses.springsandbox.model.FiltrationInfo;

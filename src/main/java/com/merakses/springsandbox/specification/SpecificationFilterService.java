@@ -1,8 +1,8 @@
 package com.merakses.springsandbox.specification;
 
-import static com.merakses.springsandbox.util.GenericReflectionUtils.getFieldValue;
+import static com.merakses.springsandbox.util.ReflectionUtils.getFieldValue;
 
-import com.merakses.springsandbox.util.GenericReflectionUtils;
+import com.merakses.springsandbox.util.ReflectionUtils;
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Field;
 import java.util.ArrayList;
@@ -21,7 +21,7 @@ public class SpecificationFilterService {
   public SpecificationFilterService(List<SpecificationFilter> predicates) {
     predicateMap = predicates.stream()
         .collect(Collectors.toMap(
-            GenericReflectionUtils::getAnnotationTypeParameter,
+            ReflectionUtils::getAnnotationTypeParameter,
             Function.identity()
         ));
   }
@@ -32,21 +32,31 @@ public class SpecificationFilterService {
 
     for (Field field : filter.getClass().getDeclaredFields()) {
       for (Annotation annotation : field.getAnnotations()) {
-        Class<? extends Annotation> annotationType = annotation.annotationType();
-        if (predicateMap.containsKey(annotationType)) {
-          Object fieldValue = getFieldValue(filter, field);
-          SpecificationFilter specificationFilter = predicateMap.get(annotationType);
-          Specification<T> specification = specificationFilter.generate(annotation, fieldValue);
-
-//          result.and(specification);
-          if (specification != null) {
-            specifications.add(specification);
-          }
+        if (predicateMap.containsKey(annotation.annotationType())) {
+          handleFilter(getFieldValue(filter, field), annotation, specifications);
         }
       }
     }
 
 //    return result;
     return Specification.allOf(specifications);
+  }
+
+  private <T> void handleFilter(
+      Object fieldValue,
+      Annotation annotation,
+      List<Specification<T>> specifications
+  ) {
+    if (fieldValue == null) {
+      return;
+    }
+
+    SpecificationFilter specificationFilter = predicateMap.get(annotation.annotationType());
+    Specification<T> specification = specificationFilter.generate(annotation, fieldValue);
+
+    if (specification != null) {
+//              result.and(specification);
+      specifications.add(specification);
+    }
   }
 }
