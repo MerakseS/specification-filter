@@ -1,10 +1,10 @@
 package com.merakses.springsandbox.processor;
 
-import static com.merakses.springsandbox.util.ReflectionUtils.getSpecificationTypeParameter;
-
 import com.merakses.springsandbox.annotation.SpecificationFilter;
 import com.merakses.springsandbox.model.FiltrationInfo;
 import com.merakses.springsandbox.specification.SpecificationFilterService;
+import java.lang.reflect.Field;
+import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Proxy;
 import java.util.Arrays;
 import java.util.HashMap;
@@ -13,6 +13,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.BeansException;
 import org.springframework.beans.factory.config.BeanPostProcessor;
+import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Component;
 
 @Slf4j
@@ -54,5 +55,16 @@ public class FilteredAnnotationBeanPostProcessor implements BeanPostProcessor {
         new SpecificationFilterDynamicProxy(bean, filtrationInfo,
             specificationFilterService)
     );
+  }
+
+  public static Class<?> getSpecificationTypeParameter(Field field) {
+    if (!Specification.class.isAssignableFrom(field.getType())) {
+      throw new IllegalArgumentException("Field type must implement Specification");
+    }
+
+    var genericType = (ParameterizedType) field.getGenericType();
+    return (Class<?>) Arrays.stream(genericType.getActualTypeArguments())
+        .findFirst()
+        .orElse(null);
   }
 }

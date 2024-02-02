@@ -4,6 +4,7 @@ import static com.merakses.springsandbox.util.ReflectionUtils.getFieldValue;
 
 import com.merakses.springsandbox.specification.annotation.FilterCondition;
 import java.lang.annotation.Annotation;
+import java.lang.reflect.Field;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -18,27 +19,28 @@ public class SpecificationFilterService {
 
   private final Map<Class<?>, SpecificationFilter> specificationFilters;
 
-  public SpecificationFilterService(List<SpecificationFilter> predicates) {
+  public SpecificationFilterService(List<SpecificationFilter<?, ?>> predicates) {
     specificationFilters = predicates.stream()
         .collect(Collectors.toMap(Object::getClass, Function.identity()));
   }
 
   public <T> Specification<T> create(Object filter) {
-//    Specification<T> result = Specification.where(null); TODO Why it doesn't work
-    List<Specification<T>> specificationList = new ArrayList<>();
+    if (filter == null) {
+      return null;
+    }
 
-    for (var field : filter.getClass().getDeclaredFields()) {
+    List<Specification<T>> specificationList = new ArrayList<>();
+    for (Field field : filter.getClass().getDeclaredFields()) {
       Object fieldValue = getFieldValue(filter, field);
-      for (var annotation : field.getAnnotations()) {
-        handleAnnotations(fieldValue, annotation, specificationList);
+      for (Annotation annotation : field.getAnnotations()) {
+        handleAnnotation(fieldValue, annotation, specificationList);
       }
     }
 
-//    return result;
     return Specification.allOf(specificationList);
   }
 
-  private <T> void handleAnnotations(
+  private <T> void handleAnnotation(
       Object fieldValue,
       Annotation annotation,
       List<Specification<T>> specificationList
@@ -50,24 +52,10 @@ public class SpecificationFilterService {
 
     for (var filterClass : filterCondition.filteredBy()) {
       if (specificationFilters.containsKey(filterClass)) {
-        Specification<T> specification = handleFilterClass(fieldValue, annotation, filterClass);
-        if (specification != null) {
-          specificationList.add(specification);
-        }
+        var specificationFilter = specificationFilters.get(filterClass);
+        Specification<T> specification = specificationFilter.generate(annotation, fieldValue);
+        specificationList.add(specification);
       }
     }
-  }
-
-  private <T> Specification<T> handleFilterClass(
-      Object fieldValue,
-      Annotation annotation,
-      Class<? extends SpecificationFilter<?, ?>> filterClass
-  ) {
-    if (fieldValue == null) {
-      return null;
-    }
-
-    var specificationFilter = specificationFilters.get(filterClass);
-    return specificationFilter.generate(annotation, fieldValue);
   }
 }

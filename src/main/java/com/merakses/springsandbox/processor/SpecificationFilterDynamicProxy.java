@@ -6,6 +6,8 @@ import com.merakses.springsandbox.specification.SpecificationFilterService;
 import com.merakses.springsandbox.util.ReflectionUtils;
 import java.lang.reflect.InvocationHandler;
 import java.lang.reflect.Method;
+import java.util.Arrays;
+import java.util.Optional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.jpa.domain.Specification;
 
@@ -20,32 +22,31 @@ public class SpecificationFilterDynamicProxy implements InvocationHandler {
   @Override
   public Object invoke(Object proxy, Method method, Object[] args) throws Throwable {
     Object parameter = findFilter(args, filtrationInfo.getFilteredClass());
-    if (parameter == null) {
-      return method.invoke(target, args);
-    }
-
     Specification<?> specification = specificationFilterService.create(parameter);
-    ReflectionUtils.setFieldValue(filtrationInfo.getSpeciticationField(),
-        target, specification);
+    ReflectionUtils.setFieldValue(filtrationInfo.getSpeciticationField(), target, specification);
 
     return method.invoke(target, args);
   }
 
   private static Object findFilter(Object[] args, Class<?> filteredClass) {
-    if (args == null) {
-      return null;
+    return Optional.ofNullable(args)
+        .stream().flatMap(Arrays::stream)
+        .filter(parameter -> isEntityFilter(parameter, filteredClass))
+        .findFirst()
+        .orElse(null);
+  }
+
+  private static boolean isEntityFilter(Object parameter, Class<?> filteredClass) {
+    if (parameter == null) {
+      return false;
     }
 
-    for (Object parameter : args) {
-      Class<?> parameterType = parameter.getClass();
-      if (parameterType.isAnnotationPresent(EntityFilter.class)) {
-        EntityFilter entityFilterAnnotation = parameterType.getAnnotation(EntityFilter.class);
-        if (entityFilterAnnotation.value() == filteredClass) {
-          return parameter;
-        }
-      }
+    Class<?> parameterType = parameter.getClass();
+    if (parameterType.isAnnotationPresent(EntityFilter.class)) {
+      EntityFilter entityFilterAnnotation = parameterType.getAnnotation(EntityFilter.class);
+      return entityFilterAnnotation.value() == filteredClass;
     }
 
-    return null;
+    return false;
   }
 }

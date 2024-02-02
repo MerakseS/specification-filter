@@ -7,13 +7,18 @@ import com.merakses.springsandbox.specification.annotation.impl.Equals;
 import com.merakses.springsandbox.specification.annotation.impl.GreaterThan;
 import com.merakses.springsandbox.specification.annotation.impl.LesserThan;
 import com.merakses.springsandbox.specification.annotation.impl.Like;
+import java.time.LocalDate;
 import java.util.List;
+import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
+import lombok.NoArgsConstructor;
 
 @Data
 @Builder
 @EntityFilter(Product.class)
+@NoArgsConstructor
+@AllArgsConstructor
 public class ProductFilterDto {
 
   @Like
@@ -27,4 +32,7 @@ public class ProductFilterDto {
 
   @Equals
   private List<ProductType> productTypes;
+
+  @GreaterThan(Product.Fields.launchDate)
+  private LocalDate launchDateFrom;
 }

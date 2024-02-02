@@ -7,15 +7,17 @@ import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Component;
 
 @Component
-public class GreaterThanSpecificationFilter implements SpecificationFilter<GreaterThan, Number> {
+public class GreaterThanSpecificationFilter
+    implements SpecificationFilter<GreaterThan, Comparable> {
 
   @Override
-  public <S> Specification<S> generate(GreaterThan annotation, Number value) {
+  public <S> Specification<S> generate(GreaterThan annotation, Comparable value) {
     String fieldName = annotation.value();
     if (value == null || StringUtils.isBlank(fieldName)) {
       return null;
     }
 
-    return (root, query, criteriaBuilder) -> criteriaBuilder.gt(root.get(fieldName), value);
+    return (root, query, criteriaBuilder) ->
+        criteriaBuilder.greaterThanOrEqualTo(root.get(fieldName), value);
   }
 }

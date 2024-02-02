@@ -8,6 +8,7 @@ import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.Table;
+import java.time.LocalDate;
 import java.util.Objects;
 import java.util.UUID;
 import lombok.Getter;
@@ -42,6 +43,9 @@ public class Product {
   @Column(name = "product_type")
   @Enumerated(EnumType.STRING)
   private ProductType productType;
+
+  @Column(name = "launch_date")
+  private LocalDate launchDate;
 
   @Override
   public final boolean equals(Object o) {

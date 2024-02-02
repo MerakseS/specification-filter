@@ -4,6 +4,7 @@ import com.merakses.springsandbox.dto.ProductFilterDto;
 import com.merakses.springsandbox.entity.Product;
 import com.merakses.springsandbox.entity.ProductType;
 import com.merakses.springsandbox.repository.ProductRepository;
+import java.time.LocalDate;
 import java.util.List;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Assertions;
@@ -19,6 +20,8 @@ import org.springframework.test.context.ActiveProfiles;
 @AutoConfigureTestDatabase
 public class SpecificationFilterTest {
 
+  private static final LocalDate NOW = LocalDate.now();
+
   @Autowired
   private ProductRepository productRepository;
 
@@ -28,15 +31,18 @@ public class SpecificationFilterTest {
   private final List<Product> products = List.of(
       new Product().setName("Earphones")
           .setPrice(100)
-          .setProductType(ProductType.EARPHONES),
+          .setProductType(ProductType.EARPHONES)
+          .setLaunchDate(NOW),
       new Product()
           .setName("Smartphone")
           .setPrice(200)
-          .setProductType(ProductType.PHONE),
+          .setProductType(ProductType.PHONE)
+          .setLaunchDate(NOW.plusYears(1)),
       new Product()
           .setName("Laptop")
           .setPrice(300)
           .setProductType(ProductType.COMPUTER)
+          .setLaunchDate(NOW.minusYears(1))
   );
 
   @BeforeEach
@@ -53,6 +59,19 @@ public class SpecificationFilterTest {
   public void testRepository() {
     List<Product> actualProducts = productService.findAll();
     Assertions.assertEquals(products.size(), actualProducts.size());
+  }
+
+  @Test
+  public void nullFilter() {
+    List<Product> actual = productService.search(null);
+    System.out.println(actual);
+    Assertions.assertEquals(products, actual);
+  }
+
+  @Test
+  public void emptyFilter() {
+    List<Product> actual = productService.search(new ProductFilterDto());
+    Assertions.assertEquals(products, actual);
   }
 
   @Test
@@ -97,5 +116,18 @@ public class SpecificationFilterTest {
     Assertions.assertTrue(actual.stream()
         .map(Product::getPrice)
         .allMatch(price -> (price >= minPrice) && (price <= maxPrice)));
+  }
+
+  @Test
+  public void launchDateIsAfter() {
+    ProductFilterDto filter = ProductFilterDto.builder()
+        .launchDateFrom(NOW)
+        .build();
+
+    List<Product> actual = productService.search(filter);
+
+    Assertions.assertTrue(actual.stream()
+        .map(Product::getLaunchDate)
+        .noneMatch(launchDate -> launchDate.isBefore(NOW)));
   }
 }

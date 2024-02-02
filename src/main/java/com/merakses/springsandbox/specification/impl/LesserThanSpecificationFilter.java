@@ -7,16 +7,17 @@ import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Component;
 
 @Component
-public class LesserThanSpecificationFilter implements
-    SpecificationFilter<LesserThan, Number> { // TODO Comparable
+public class LesserThanSpecificationFilter
+    implements SpecificationFilter<LesserThan, Comparable> {
 
   @Override
-  public <S> Specification<S> generate(LesserThan annotation, Number value) {
+  public <S> Specification<S> generate(LesserThan annotation, Comparable value) {
     String fieldName = annotation.value();
     if (value == null || StringUtils.isBlank(fieldName)) {
       return null;
     }
 
-    return (root, query, criteriaBuilder) -> criteriaBuilder.le(root.get(fieldName), value);
+    return (root, query, criteriaBuilder) ->
+        criteriaBuilder.lessThanOrEqualTo(root.get(fieldName), value);
   }
 }
