@@ -1,4 +1,4 @@
-package com.merakses.springsandbox.specification.annotation;
+package com.merakses.springsandbox.specification.annotation.impl;
 
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;

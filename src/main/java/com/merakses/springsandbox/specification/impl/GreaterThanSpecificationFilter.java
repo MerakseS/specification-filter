@@ -1,7 +1,7 @@
 package com.merakses.springsandbox.specification.impl;
 
 import com.merakses.springsandbox.specification.SpecificationFilter;
-import com.merakses.springsandbox.specification.annotation.GreaterThan;
+import com.merakses.springsandbox.specification.annotation.impl.GreaterThan;
 import io.micrometer.common.util.StringUtils;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Component;

@@ -1,13 +1,14 @@
 package com.merakses.springsandbox.specification.impl;
 
 import com.merakses.springsandbox.specification.SpecificationFilter;
-import com.merakses.springsandbox.specification.annotation.LesserThan;
+import com.merakses.springsandbox.specification.annotation.impl.LesserThan;
 import io.micrometer.common.util.StringUtils;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Component;
 
 @Component
-public class LesserThanSpecificationFilter implements SpecificationFilter<LesserThan, Number> {
+public class LesserThanSpecificationFilter implements
+    SpecificationFilter<LesserThan, Number> { // TODO Comparable
 
   @Override
   public <S> Specification<S> generate(LesserThan annotation, Number value) {

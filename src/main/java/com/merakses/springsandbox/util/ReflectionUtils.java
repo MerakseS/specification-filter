@@ -1,10 +1,11 @@
 package com.merakses.springsandbox.util;
 
-import com.merakses.springsandbox.specification.SpecificationFilter;
-import java.lang.annotation.Annotation;
+import static org.springframework.util.ReflectionUtils.getField;
+import static org.springframework.util.ReflectionUtils.makeAccessible;
+import static org.springframework.util.ReflectionUtils.setField;
+
 import java.lang.reflect.Field;
 import java.lang.reflect.ParameterizedType;
-import java.lang.reflect.Type;
 import lombok.experimental.UtilityClass;
 import org.springframework.data.jpa.domain.Specification;
 
@@ -20,24 +21,13 @@ public class ReflectionUtils {
     return (Class<?>) genericType.getActualTypeArguments()[0];
   }
 
-  public Class<? extends Annotation> getAnnotationTypeParameter(SpecificationFilter target) {
-    for (Type type : target.getClass().getGenericInterfaces()) {
-      if (type instanceof ParameterizedType parameterizedType &&
-          parameterizedType.getRawType() == SpecificationFilter.class) {
-        return (Class<? extends Annotation>) parameterizedType.getActualTypeArguments()[0];
-      }
-    }
-
-    return null;
-  }
-
   public static Object getFieldValue(Object target, Field field) {
-    org.springframework.util.ReflectionUtils.makeAccessible(field);
-    return org.springframework.util.ReflectionUtils.getField(field, target);
+    makeAccessible(field);
+    return getField(field, target);
   }
 
   public static void setFieldValue(Field field, Object target, Object value) {
-    field.setAccessible(true);
-    org.springframework.util.ReflectionUtils.setField(field, target, value);
+    makeAccessible(field);
+    setField(field, target, value);
   }
 }

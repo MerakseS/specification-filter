@@ -1,4 +1,4 @@
-package com.merakses.springsandbox.specification.annotation;
+package com.merakses.springsandbox.specification.annotation.impl;
 
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;
@@ -7,7 +7,7 @@ import java.lang.annotation.Target;
 
 @Target(ElementType.FIELD)
 @Retention(RetentionPolicy.RUNTIME)
-public @interface GreaterThan {
+public @interface Like {
 
   String value() default "";
 }
