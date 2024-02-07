@@ -130,4 +130,18 @@ public class SpecificationFilterTest {
         .map(Product::getLaunchDate)
         .noneMatch(launchDate -> launchDate.isBefore(NOW)));
   }
+
+  @Test
+  public void like() {
+    String searchName = "phone";
+    ProductFilterDto filter = ProductFilterDto.builder()
+        .name(searchName)
+        .build();
+
+    List<Product> actual = productService.search(filter);
+
+    Assertions.assertTrue(actual.stream()
+        .map(Product::getName)
+        .allMatch(name -> name.contains(searchName)));
+  }
 }

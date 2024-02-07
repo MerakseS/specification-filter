@@ -13,7 +13,7 @@ public class GreaterThanSpecificationFilter
   @Override
   public <S> Specification<S> generate(GreaterThan annotation, Comparable value) {
     String fieldName = annotation.value();
-    if (value == null || StringUtils.isBlank(fieldName)) {
+    if (StringUtils.isBlank(fieldName)) {
       return null;
     }
 

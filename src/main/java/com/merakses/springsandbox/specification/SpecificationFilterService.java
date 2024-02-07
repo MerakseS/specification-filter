@@ -6,6 +6,7 @@ import com.merakses.springsandbox.specification.annotation.FilterCondition;
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Field;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 import java.util.function.Function;
@@ -31,13 +32,25 @@ public class SpecificationFilterService {
 
     List<Specification<T>> specificationList = new ArrayList<>();
     for (Field field : filter.getClass().getDeclaredFields()) {
-      Object fieldValue = getFieldValue(filter, field);
-      for (Annotation annotation : field.getAnnotations()) {
-        handleAnnotation(fieldValue, annotation, specificationList);
-      }
+      handleField(filter, field, specificationList);
     }
 
     return Specification.allOf(specificationList);
+  }
+
+  private <T> void handleField(
+      Object filter,
+      Field field,
+      List<Specification<T>> specificationList
+  ) {
+    Object fieldValue = getFieldValue(filter, field);
+    if (fieldValue == null) {
+      return;
+    }
+
+    for (Annotation annotation : field.getAnnotations()) {
+      handleAnnotation(fieldValue, annotation, specificationList);
+    }
   }
 
   private <T> void handleAnnotation(
@@ -50,12 +63,10 @@ public class SpecificationFilterService {
       return;
     }
 
-    for (var filterClass : filterCondition.filteredBy()) {
-      if (specificationFilters.containsKey(filterClass)) {
-        var specificationFilter = specificationFilters.get(filterClass);
-        Specification<T> specification = specificationFilter.generate(annotation, fieldValue);
-        specificationList.add(specification);
-      }
-    }
+    Arrays.stream(filterCondition.filteredBy())
+        .filter(specificationFilters::containsKey)
+        .map(specificationFilters::get)
+        .map(it -> it.generate(annotation, fieldValue))
+        .forEach(specificationList::add);
   }
 }

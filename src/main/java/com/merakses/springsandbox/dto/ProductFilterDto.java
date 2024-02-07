@@ -16,12 +16,12 @@ import lombok.NoArgsConstructor;
 
 @Data
 @Builder
-@EntityFilter(Product.class)
 @NoArgsConstructor
 @AllArgsConstructor
+@EntityFilter(Product.class)
 public class ProductFilterDto {
 
-  @Like
+  @Like(value = Product.Fields.name, prefix = "%", postfix = "%")
   private String name;
 
   @GreaterThan(Product.Fields.price)

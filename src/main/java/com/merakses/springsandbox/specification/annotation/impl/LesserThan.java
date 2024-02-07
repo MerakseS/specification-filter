@@ -12,5 +12,5 @@ import java.lang.annotation.Target;
 @FilterCondition(filteredBy = LesserThanSpecificationFilter.class)
 public @interface LesserThan {
 
-  String value() default "";
+  String value();
 }
