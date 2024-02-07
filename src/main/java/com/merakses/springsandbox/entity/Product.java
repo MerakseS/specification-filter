@@ -38,4 +38,7 @@ public class Product {
 
   @Column(name = "launch_date")
   private LocalDate launchDate;
+
+  @Column(name = "is_available", nullable = false)
+  private boolean isAvailable;
 }

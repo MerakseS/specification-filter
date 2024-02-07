@@ -3,7 +3,7 @@ package com.merakses.springsandbox.dto;
 import com.merakses.springsandbox.annotation.EntityFilter;
 import com.merakses.springsandbox.entity.Product;
 import com.merakses.springsandbox.entity.ProductType;
-import com.merakses.springsandbox.specification.annotation.impl.Equals;
+import com.merakses.springsandbox.specification.annotation.impl.Equal;
 import com.merakses.springsandbox.specification.annotation.impl.GreaterThan;
 import com.merakses.springsandbox.specification.annotation.impl.LesserThan;
 import com.merakses.springsandbox.specification.annotation.impl.Like;
@@ -30,9 +30,12 @@ public class ProductFilterDto {
   @LesserThan(Product.Fields.price)
   private Integer maxPrice;
 
-  @Equals
+  @Equal(Product.Fields.productType)
   private List<ProductType> productTypes;
 
   @GreaterThan(Product.Fields.launchDate)
   private LocalDate launchDateFrom;
+
+  @Equal(Product.Fields.isAvailable)
+  private Boolean isAvailable;
 }

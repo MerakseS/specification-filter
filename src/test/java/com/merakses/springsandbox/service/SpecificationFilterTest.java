@@ -32,17 +32,20 @@ public class SpecificationFilterTest {
       new Product().setName("Earphones")
           .setPrice(100)
           .setProductType(ProductType.EARPHONES)
-          .setLaunchDate(NOW),
+          .setLaunchDate(NOW)
+          .setAvailable(true),
       new Product()
           .setName("Smartphone")
           .setPrice(200)
           .setProductType(ProductType.PHONE)
-          .setLaunchDate(NOW.plusYears(1)),
+          .setLaunchDate(NOW.plusYears(1))
+          .setAvailable(true),
       new Product()
           .setName("Laptop")
           .setPrice(300)
           .setProductType(ProductType.COMPUTER)
           .setLaunchDate(NOW.minusYears(1))
+          .setAvailable(false)
   );
 
   @BeforeEach
@@ -143,5 +146,31 @@ public class SpecificationFilterTest {
     Assertions.assertTrue(actual.stream()
         .map(Product::getName)
         .allMatch(name -> name.contains(searchName)));
+  }
+
+  @Test
+  public void equalsAvailable() {
+    ProductFilterDto filter = ProductFilterDto.builder()
+        .isAvailable(true)
+        .build();
+
+    List<Product> actual = productService.search(filter);
+
+    Assertions.assertTrue(actual.stream()
+        .allMatch(Product::isAvailable));
+  }
+
+  @Test
+  public void equalsIterable() {
+    List<ProductType> productTypes = List.of(ProductType.PHONE, ProductType.COMPUTER);
+    ProductFilterDto filter = ProductFilterDto.builder()
+        .productTypes(productTypes)
+        .build();
+
+    List<Product> actual = productService.search(filter);
+
+    Assertions.assertTrue(actual.stream()
+        .map(Product::getProductType)
+        .allMatch(productTypes::contains));
   }
 }
