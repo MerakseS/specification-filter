@@ -5,7 +5,7 @@ import com.merakses.productservice.entity.ProductType;
 import com.merakses.specificationfilterlib.annotation.EntityFilter;
 import com.merakses.specificationfilterlib.annotation.impl.Equal;
 import com.merakses.specificationfilterlib.annotation.impl.GreaterThan;
-import com.merakses.specificationfilterlib.annotation.impl.LesserThan;
+import com.merakses.specificationfilterlib.annotation.impl.LessThan;
 import com.merakses.specificationfilterlib.annotation.impl.Like;
 import java.time.LocalDate;
 import java.util.List;
@@ -27,7 +27,7 @@ public class ProductFilterDto {
   @GreaterThan(Product.Fields.price)
   private Integer minPrice;
 
-  @LesserThan(Product.Fields.price)
+  @LessThan(Product.Fields.price)
   private Integer maxPrice;
 
   @Equal(Product.Fields.productType)

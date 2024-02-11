@@ -22,6 +22,13 @@ public class ProductServiceImpl implements ProductService {
   private final Specification<Product> searchSpec = Specification.where(null);
 
   @Override
+  public Product create(Product product) {
+    productRepository.save(product);
+    log.info("Successfully created product with id {}", product.getId());
+    return product;
+  }
+
+  @Override
   public List<Product> findAll() {
     log.info("Finding all products");
     return productRepository.findAll();
@@ -30,6 +37,8 @@ public class ProductServiceImpl implements ProductService {
   @Override
   public List<Product> search(ProductFilterDto filter) {
     log.info("Searching products by filter {}", filter);
-    return productRepository.findAll(searchSpec);
+    List<Product> products = productRepository.findAll(searchSpec);
+    log.info("Found products: {}", products);
+    return products;
   }
 }

@@ -92,7 +92,7 @@ public class SpecificationFilterTest {
   }
 
   @Test
-  public void lesserThan() {
+  public void lessThan() {
     int maxPrice = 200;
     ProductFilterDto filter = ProductFilterDto.builder()
         .maxPrice(maxPrice)
